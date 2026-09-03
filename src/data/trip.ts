@@ -69,7 +69,7 @@ export const showExampleResults = false;
 const examplePlayers = [
   { id: "mason", firstName: "Mason" }, { id: "jules", firstName: "Jules" },
   { id: "theo", firstName: "Theo" }, { id: "ross", firstName: "Ross" },
-  { id: "miles", firstName: "Miles" }, { id: "owen", firstName: "Owen" },
+  { id: "miles", firstName: "Miles" }, { id: "owen", firstName: "Owen 😜" },
   { id: "sam", firstName: "Sam" }, { id: "cole", firstName: "Cole" },
 ];
 
