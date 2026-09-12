@@ -1,5 +1,5 @@
-import { exampleTrip, showExampleResults, trip, type Team } from "./data/trip";
-import { getDayScore, getScoreboard } from "./lib/scoring";
+import { exampleTrip, showExampleResults, trip, type CourseHandicap, type Team } from "./data/trip";
+import { getDayScore, getMatchScore, getScoreboard } from "./lib/scoring";
 
 const activeTrip = showExampleResults ? exampleTrip : trip;
 const scoreboard = getScoreboard(activeTrip);
@@ -9,8 +9,25 @@ function playerNames(ids: string[]) {
   return ids.map((id) => activeTrip.players.find((player) => player.id === id)?.firstName ?? id).join(" & ");
 }
 
+function playerLabel(id: string) {
+  const player = activeTrip.players.find((item) => item.id === id);
+  if (!player) return id;
+  return `${player.firstName}${Number.isFinite(player.handicapIndex) ? ` · ${player.handicapIndex} HI` : ""}`;
+}
+
 function TeamMark({ team, compact = false }: { team: Team; compact?: boolean }) {
   return <span className={compact ? "team-mark compact" : "team-mark"} style={{ "--team-color": team.color } as React.CSSProperties}>{team.name}</span>;
+}
+
+function CourseScorecard({ course }: { course: CourseHandicap }) {
+  if (!course.holePars || !course.strokeIndexes) return null;
+  return <details className="course-scorecard">
+    <summary>{course.tee} tee scorecard · hole handicaps</summary>
+    <div className="course-scorecard-scroll"><table><thead><tr><th>Hole</th>{course.holePars.map((_, index) => <th key={index}>{index + 1}</th>)}</tr></thead><tbody>
+      <tr><th>Par</th>{course.holePars.map((par, index) => <td key={index}>{par}</td>)}</tr>
+      <tr><th>Stroke index</th>{course.strokeIndexes.map((strokeIndex, index) => <td key={index}>{strokeIndex}</td>)}</tr>
+    </tbody></table></div>
+  </details>;
 }
 
 export default function App() {
@@ -42,7 +59,7 @@ export default function App() {
       <div className="section-label">The Itinerary</div><h2 id="itinerary-title">Four rounds.<br /><em>One cup.</em></h2>
       <div className="day-list">{activeTrip.days.map((day, index) => <article className={`day-card ${day.type}`} key={day.id}>
         <div className="day-number">0{index + 1}</div><div className="day-date"><span>{day.day}</span><strong>{day.date}</strong></div>
-        <div className="day-main"><h3>{day.course}</h3><p>{day.format}</p><small>{day.detail}</small></div>
+        <div className="day-main"><h3>{day.course}</h3><p>{day.format}</p><small>{day.detail}</small>{day.handicap && <><small className="course-handicap">{day.handicap.tee} tees · Par {day.handicap.par} · {day.handicap.courseRating}/{day.handicap.slopeRating} rating/slope</small><CourseScorecard course={day.handicap} /></>}</div>
         <div className="day-meta"><span>{day.teeTime}</span>{day.points > 0 && <b>{day.points} pts</b>}</div>
       </article>)}</div>
     </section>
@@ -51,7 +68,7 @@ export default function App() {
       <div><div className="section-label">The Sides</div><h2 id="teams-title">Draft night<br /><em>decides it.</em></h2><p>Two captains will select teams in a snake draft after Doon Brae. The board updates once the picks are in.</p></div>
       <div className="team-cards">{activeTrip.teams.map((team) => <article className="team-card" key={team.id} style={{ "--team-color": team.color } as React.CSSProperties}>
         <div className="team-card-rule" /><p>{team.captain ? `Captain ${team.captain}` : "Captain TBD"}</p><h3>{team.name}</h3>
-        {team.playerIds.length ? <ul>{team.playerIds.map((id) => <li key={id}>{playerNames([id])}</li>)}</ul> : <div className="draft-pending">Draft pending</div>}
+        {team.playerIds.length ? <ul>{team.playerIds.map((id) => <li key={id}>{playerLabel(id)}</li>)}</ul> : <div className="draft-pending">Draft pending</div>}
       </article>)}</div>
     </section>
 
@@ -60,11 +77,18 @@ export default function App() {
       <div className="results-list">{activeTrip.days.filter((day) => day.type === "competition").map((day) => {
         const matches = activeTrip.matches.filter((match) => match.dayId === day.id); const scores = getDayScore(activeTrip, day.id);
         return <article className="result-day" key={day.id}><header><div><span>{day.day} · {day.date}</span><h3>{day.course}</h3><p>{day.format}</p></div><div className="day-score"><span>{scores[teamA.id]} — {scores[teamB.id]}</span><small>of {day.points} pts</small></div></header>
-          {matches.length ? <div className="match-list">{matches.map((match) => <div className="match-row" key={match.id}>
-            <div><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamA)!} /><strong>{playerNames(match.playersA)}</strong></div>
-            <div className="match-result"><span>{match.status === "final" ? match.result : match.status === "in_progress" ? "In progress" : "Teeing off soon"}</span><b>{match.pointsA}–{match.pointsB} pts</b></div>
-            <div className="match-right"><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamB)!} /><strong>{playerNames(match.playersB)}</strong></div>
-          </div>)}</div> : <div className="pairings-empty"><span>○</span><div><strong>Pairings forthcoming</strong><p>Captains will post the matchups after the draft.</p></div></div>}
+          {matches.length ? <div className="match-list">{matches.map((match) => {
+            const matchScore = getMatchScore(activeTrip, match);
+            const completed = match.status === "final";
+            const result = matchScore.automatic
+              ? `Net ${matchScore.netA} — ${matchScore.netB}`
+              : completed ? match.result : match.status === "in_progress" ? "In progress" : "Teeing off soon";
+            return <div className="match-row" key={match.id}>
+              <div><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamA)!} /><strong>{playerNames(match.playersA)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossA} · {matchScore.handicapA} strokes</small>}</div>
+              <div className="match-result"><span>{result}</span><b>{matchScore.pointsA}–{matchScore.pointsB} pts</b></div>
+              <div className="match-right"><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamB)!} /><strong>{playerNames(match.playersB)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossB} · {matchScore.handicapB} strokes</small>}</div>
+            </div>;
+          })}</div> : <div className="pairings-empty"><span>○</span><div><strong>Pairings forthcoming</strong><p>Captains will post the matchups after the draft.</p></div></div>}
         </article>;
       })}</div>
     </section>

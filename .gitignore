@@ -40,3 +40,6 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# Reference scorecards are kept locally for course-data extraction.
+/scorecards/
