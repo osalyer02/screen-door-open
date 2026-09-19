@@ -21,7 +21,7 @@ Use the GitHub mobile app to edit [`public/saturday-pairings.json`](public/satur
 }
 ```
 
-The first two entries are the gross 2v2 scrambles. The third is automatically treated as the 2v1 handicapped scramble (35%/15% for Team Jeremy's pair and 100% for Team Chane's solo player). Reload the site after GitHub saves the file; it reads the raw file directly, so a Pages redeploy is not required.
+The first two entries are the straight-up 2v2 scrambles. The third is the 2v1: Team Jeremy's pair plays without handicap, while Team Chane's solo player receives full course handicap. To post a result, add `result`, `pointsJeremy`, and `pointsChane` to an entry, as shown in the live file. Reload the site after GitHub saves the file; it reads the raw file directly, so a Pages redeploy is not required.
 
 1. Before or during Friday's draft, add each player under `players`, including their `handicapIndex`, assign captain names, and place player IDs into each team's `playerIds` array.
 2. When captains set pairings, add a match to `matches`. Use `scheduled` before tee-off and `in_progress` during play.

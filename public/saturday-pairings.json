@@ -1,17 +1,26 @@
 {
-  "updated": "Pairings pending",
+  "updated": "Saturday results",
   "pairings": [
     {
-      "teamJeremy": "",
-      "teamChane": ""
+      "teamJeremy": "Chris, Quinn",
+      "teamChane": "Owen, Chane",
+      "result": "Chris & Quinn won 1 up",
+      "pointsJeremy": 1,
+      "pointsChane": 0
     },
     {
-      "teamJeremy": "",
-      "teamChane": ""
+      "teamJeremy": "Jeremy, Rylan",
+      "teamChane": "Drew, Jared",
+      "result": "Drew & Jared won 2 up",
+      "pointsJeremy": 0,
+      "pointsChane": 1
     },
     {
-      "teamJeremy": "",
-      "teamChane": ""
+      "teamJeremy": "Derek, Kevin",
+      "teamChane": "Kirk",
+      "result": "Kirk won 1 up",
+      "pointsJeremy": 0,
+      "pointsChane": 1
     }
   ]
 }

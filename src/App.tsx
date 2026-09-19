@@ -7,7 +7,7 @@ const SATURDAY_PAIRINGS_URL = "https://raw.githubusercontent.com/osalyer02/scree
 
 type SaturdayPairings = {
   updated?: string;
-  pairings?: { teamJeremy?: string; teamChane?: string }[];
+  pairings?: { teamJeremy?: string; teamChane?: string; result?: string; pointsJeremy?: number; pointsChane?: number }[];
 };
 
 function playerIds(value: string | undefined) {
@@ -28,11 +28,10 @@ function saturdayMatches(pairings: SaturdayPairings["pairings"]): TripData["matc
       teamB: "team-b",
       playersA,
       playersB,
-      status: "scheduled" as const,
-      result: "",
-      pointsA: 0,
-      pointsB: 0,
-      ...(index === 2 ? { handicapAllowances: { a: [35, 15], b: [100] } } : {}),
+      status: pairing.result ? "final" as const : "scheduled" as const,
+      result: pairing.result ?? "",
+      pointsA: pairing.pointsJeremy ?? 0,
+      pointsB: pairing.pointsChane ?? 0,
     };
   }).filter((match) => match.playersA.length > 0 && match.playersB.length > 0);
 }
