@@ -28,7 +28,8 @@ export function getStrokesOnHole(courseHandicap, strokeIndex) {
  * Applies a team's allowance percentages to its players' Course Handicaps.
  * Percentages are applied from the lowest Course Handicap upward, so a
  * two-player alternate-shot allowance of [60, 40] means 60% of the lower
- * handicap plus 40% of the higher handicap.
+ * handicap plus 40% of the higher handicap. A match may override its day's
+ * allowances on either side, such as a 2v1 scramble using [35, 15] vs [100].
  */
 export function getTeamHandicap(data, match, side) {
   const day = data.days?.find((item) => item.id === match.dayId);
@@ -39,7 +40,8 @@ export function getTeamHandicap(data, match, side) {
     .map((id) => data.players?.find((player) => player.id === id)?.handicapIndex)
     .map((index) => getCourseHandicap(index, course))
     .sort((a, b) => a - b);
-  const allowances = course.allowance?.percentages ?? DEFAULT_ALLOWANCE;
+  const matchAllowances = side === "A" ? match.handicapAllowances?.a : match.handicapAllowances?.b;
+  const allowances = matchAllowances ?? course.allowance?.percentages ?? DEFAULT_ALLOWANCE;
   return roundHalfUp(handicaps.reduce((total, handicap, index) => total + handicap * ((allowances[index] ?? 0) / 100), 0));
 }
 

@@ -50,7 +50,7 @@ export default function App() {
         <div className="score-middle"><span>{scoreboard.pointsAwarded} awarded</span><div className="track" aria-label={`${scoreboard.pointsAwarded} of ${activeTrip.totalPoints} points awarded`}><span style={{ width: `${(scoreboard.pointsAwarded / activeTrip.totalPoints) * 100}%` }} /></div><b>{scoreboard.pointsRemaining} points remaining</b></div>
         <div className="score-team right"><TeamMark team={teamB} /><strong>{scoreboard.totals[teamB.id]}</strong></div>
       </div>
-      <p className="status-line"><span className="status-dot" /> {activeTrip.matches.length ? "Results update as matches are completed." : "Teams and pairings will follow Friday night’s draft."}</p>
+      <p className="status-line"><span className="status-dot" /> {activeTrip.matches.length ? "Results update as matches are completed." : "Teams are set; competitive pairings will be posted before tee-off."}</p>
     </section>
 
     <section className="latest section-shell" aria-labelledby="latest-title"><div className="latest-stamp">Latest<br />Update</div><div><div className="section-label">From the clubhouse · {activeTrip.updates[0]?.date}</div><h2 id="latest-title">{activeTrip.updates[0]?.title}</h2><p>{activeTrip.updates[0]?.detail}</p></div></section>
@@ -65,7 +65,7 @@ export default function App() {
     </section>
 
     <section className="teams section-shell" aria-labelledby="teams-title">
-      <div><div className="section-label">The Sides</div><h2 id="teams-title">Draft night<br /><em>decides it.</em></h2><p>Two captains will select teams in a snake draft after Doon Brae. The board updates once the picks are in.</p></div>
+      <div><div className="section-label">The Sides</div><h2 id="teams-title">The teams<br /><em>are set.</em></h2><p>Jeremy leads a six-man side against Chane&apos;s five. Pairings will be posted before each competitive round.</p></div>
       <div className="team-cards">{activeTrip.teams.map((team) => <article className="team-card" key={team.id} style={{ "--team-color": team.color } as React.CSSProperties}>
         <div className="team-card-rule" /><p>{team.captain ? `Captain ${team.captain}` : "Captain TBD"}</p><h3>{team.name}</h3>
         {team.playerIds.length ? <ul>{team.playerIds.map((id) => <li key={id}>{playerLabel(id)}</li>)}</ul> : <div className="draft-pending">Draft pending</div>}

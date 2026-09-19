@@ -45,3 +45,13 @@ test("automatically awards a net-stroke match from entered gross totals", () => 
   assert.deepEqual(getMatchScore(data, data.matches[0]), { pointsA: 0, pointsB: 1, automatic: true, grossA: 84, grossB: 92, handicapA: 10, handicapB: 20, netA: 74, netB: 72 });
   assert.deepEqual(getScoreboard(data).totals, { a: 0, b: 1 });
 });
+
+test("supports side-specific allowances for a 2v1 scramble", () => {
+  const data = {
+    teams: [{ id: "a" }, { id: "b" }],
+    players: [{ id: "alex", handicapIndex: 10 }, { id: "blair", handicapIndex: 20 }, { id: "casey", handicapIndex: 18 }],
+    days: [{ id: "d2", handicap: { par: 72, courseRating: 72, slopeRating: 113 } }],
+    matches: [{ id: "m1", dayId: "d2", teamA: "a", teamB: "b", playersA: ["alex", "blair"], playersB: ["casey"], handicapAllowances: { a: [35, 15], b: [100] }, status: "final", pointsA: 0, pointsB: 0, strokeScores: { grossA: 76, grossB: 88 } }],
+  };
+  assert.deepEqual(getMatchScore(data, data.matches[0]), { pointsA: 1, pointsB: 0, automatic: true, grossA: 76, grossB: 88, handicapA: 7, handicapB: 18, netA: 69, netB: 70 });
+});
