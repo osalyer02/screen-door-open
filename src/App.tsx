@@ -1,16 +1,48 @@
-import { exampleTrip, showExampleResults, trip, type CourseHandicap, type Team } from "./data/trip";
+import { useEffect, useState } from "react";
+import { exampleTrip, showExampleResults, trip, type CourseHandicap, type Team, type TripData } from "./data/trip";
 import { getDayScore, getMatchScore, getScoreboard } from "./lib/scoring";
 
-const activeTrip = showExampleResults ? exampleTrip : trip;
-const scoreboard = getScoreboard(activeTrip);
-const [teamA, teamB] = activeTrip.teams;
+const baseTrip = showExampleResults ? exampleTrip : trip;
+const SATURDAY_PAIRINGS_URL = "https://raw.githubusercontent.com/osalyer02/screen-door-open/main/public/saturday-pairings.json";
 
-function playerNames(ids: string[]) {
-  return ids.map((id) => activeTrip.players.find((player) => player.id === id)?.firstName ?? id).join(" & ");
+type SaturdayPairings = {
+  updated?: string;
+  pairings?: { teamJeremy?: string; teamChane?: string }[];
+};
+
+function playerIds(value: string | undefined) {
+  return (value ?? "").split(/[,&]/).map((name) => name.trim().toLowerCase()).filter(Boolean).map((name) =>
+    baseTrip.players.find((player) => player.firstName.toLowerCase() === name)?.id,
+  ).filter((id): id is string => Boolean(id));
 }
 
-function playerLabel(id: string) {
-  const player = activeTrip.players.find((item) => item.id === id);
+function saturdayMatches(pairings: SaturdayPairings["pairings"]): TripData["matches"] {
+  if (!pairings?.length) return [];
+  return pairings.map((pairing, index) => {
+    const playersA = playerIds(pairing.teamJeremy);
+    const playersB = playerIds(pairing.teamChane);
+    return {
+      id: `saturday-pairing-${index + 1}`,
+      dayId: "day-2",
+      teamA: "team-a",
+      teamB: "team-b",
+      playersA,
+      playersB,
+      status: "scheduled" as const,
+      result: "",
+      pointsA: 0,
+      pointsB: 0,
+      ...(index === 2 ? { handicapAllowances: { a: [35, 15], b: [100] } } : {}),
+    };
+  }).filter((match) => match.playersA.length > 0 && match.playersB.length > 0);
+}
+
+function playerNames(ids: string[], data: TripData) {
+  return ids.map((id) => data.players.find((player) => player.id === id)?.firstName ?? id).join(" & ");
+}
+
+function playerLabel(id: string, data: TripData) {
+  const player = data.players.find((item) => item.id === id);
   if (!player) return id;
   return `${player.firstName}${Number.isFinite(player.handicapIndex) ? ` · ${player.handicapIndex} HI` : ""}`;
 }
@@ -31,6 +63,22 @@ function CourseScorecard({ course }: { course: CourseHandicap }) {
 }
 
 export default function App() {
+  const [livePairings, setLivePairings] = useState<SaturdayPairings | null>(null);
+  useEffect(() => {
+    let disposed = false;
+    fetch(`${SATURDAY_PAIRINGS_URL}?t=${Date.now()}`, { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Pairings file unavailable")))
+      .then((data: SaturdayPairings) => { if (!disposed) setLivePairings(data); })
+      .catch(() => { /* The built-in schedule remains available when offline. */ });
+    return () => { disposed = true; };
+  }, []);
+
+  const liveMatches = saturdayMatches(livePairings?.pairings);
+  const activeTrip: TripData = liveMatches.length
+    ? { ...baseTrip, matches: [...baseTrip.matches.filter((match) => match.dayId !== "day-2"), ...liveMatches] }
+    : baseTrip;
+  const scoreboard = getScoreboard(activeTrip);
+  const [teamA, teamB] = activeTrip.teams;
   const leader = scoreboard.leader ? activeTrip.teams.find((team) => team.id === scoreboard.leader) : null;
   return <main>
     <section className="hero" aria-labelledby="site-title">
@@ -68,7 +116,7 @@ export default function App() {
       <div><div className="section-label">The Sides</div><h2 id="teams-title">The teams<br /><em>are set.</em></h2><p>Jeremy leads a six-man side against Chane&apos;s five. Pairings will be posted before each competitive round.</p></div>
       <div className="team-cards">{activeTrip.teams.map((team) => <article className="team-card" key={team.id} style={{ "--team-color": team.color } as React.CSSProperties}>
         <div className="team-card-rule" /><p>{team.captain ? `Captain ${team.captain}` : "Captain TBD"}</p><h3>{team.name}</h3>
-        {team.playerIds.length ? <ul>{team.playerIds.map((id) => <li key={id}>{playerLabel(id)}</li>)}</ul> : <div className="draft-pending">Draft pending</div>}
+        {team.playerIds.length ? <ul>{team.playerIds.map((id) => <li key={id}>{playerLabel(id, activeTrip)}</li>)}</ul> : <div className="draft-pending">Draft pending</div>}
       </article>)}</div>
     </section>
 
@@ -84,9 +132,9 @@ export default function App() {
               ? `Net ${matchScore.netA} — ${matchScore.netB}`
               : completed ? match.result : match.status === "in_progress" ? "In progress" : "Teeing off soon";
             return <div className="match-row" key={match.id}>
-              <div><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamA)!} /><strong>{playerNames(match.playersA)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossA} · {matchScore.handicapA} strokes</small>}</div>
+              <div><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamA)!} /><strong>{playerNames(match.playersA, activeTrip)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossA} · {matchScore.handicapA} strokes</small>}</div>
               <div className="match-result"><span>{result}</span><b>{matchScore.pointsA}–{matchScore.pointsB} pts</b></div>
-              <div className="match-right"><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamB)!} /><strong>{playerNames(match.playersB)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossB} · {matchScore.handicapB} strokes</small>}</div>
+              <div className="match-right"><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamB)!} /><strong>{playerNames(match.playersB, activeTrip)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossB} · {matchScore.handicapB} strokes</small>}</div>
             </div>;
           })}</div> : <div className="pairings-empty"><span>○</span><div><strong>Pairings forthcoming</strong><p>Captains will post the matchups after the draft.</p></div></div>}
         </article>;

@@ -4,7 +4,24 @@ A static, mobile-first scoreboard for the September 18–21 golf trip. It is des
 
 ## Update the trip during the weekend
 
-All content lives in `src/data/trip.ts`. Edit that one file directly in GitHub, commit the change to `main`, and GitHub Pages will publish the new scorecard automatically.
+Most trip content lives in `src/data/trip.ts`. Edit that file directly in GitHub, commit the change to `main`, and GitHub Pages will publish the new scorecard automatically.
+
+### Post Saturday pairings from your phone
+
+Use the GitHub mobile app to edit [`public/saturday-pairings.json`](public/saturday-pairings.json). Change only the quoted player-name lists and the `updated` value, then commit directly to `main`. Separate players with commas. For example:
+
+```json
+{
+  "updated": "Saturday pairings · 11:15 AM",
+  "pairings": [
+    { "teamJeremy": "Jeremy, Derek", "teamChane": "Chane, Kirk" },
+    { "teamJeremy": "Quinn, Kevin", "teamChane": "Owen, Drew" },
+    { "teamJeremy": "Chris, Rylan", "teamChane": "Jared" }
+  ]
+}
+```
+
+The first two entries are the gross 2v2 scrambles. The third is automatically treated as the 2v1 handicapped scramble (35%/15% for Team Jeremy's pair and 100% for Team Chane's solo player). Reload the site after GitHub saves the file; it reads the raw file directly, so a Pages redeploy is not required.
 
 1. Before or during Friday's draft, add each player under `players`, including their `handicapIndex`, assign captain names, and place player IDs into each team's `playerIds` array.
 2. When captains set pairings, add a match to `matches`. Use `scheduled` before tee-off and `in_progress` during play.
