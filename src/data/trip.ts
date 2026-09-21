@@ -33,6 +33,8 @@ export type TripData = {
   matches: {
     id: string; dayId: string; teamA: string; teamB: string; playersA: string[];
     playersB: string[]; status: MatchStatus; result: string; pointsA: number; pointsB: number;
+    /** Use when recording a round total rather than individual pairings. */
+    labelA?: string; labelB?: string;
     /** Optional per-side Course Handicap allowances, ordered low-to-high handicap. */
     handicapAllowances?: { a?: number[]; b?: number[] };
     strokeScores?: { grossA: number; grossB: number; pointValue?: number };
@@ -92,15 +94,18 @@ export const trip: TripData = {
     { id: "day-3", day: "Day 3 · Sunday", date: "September 20", course: "The Heather", teeTime: "Tee times begin 1:10 PM", format: "18 holes · Alternate shot", points: 3, detail: "Three points available. Team Chane will use a substitute so alternate shot is played as intended.", type: "competition", handicap: { tee: "Blue", par: 72, courseRating: 70.2, slopeRating: 137, holePars: [4, 4, 4, 3, 5, 3, 4, 4, 5, 4, 5, 3, 4, 4, 5, 3, 4, 4], strokeIndexes: [15, 5, 13, 11, 1, 17, 7, 3, 9, 6, 18, 16, 8, 10, 2, 14, 12, 4], allowance: { percentages: [60, 40] } } },
     { id: "day-4", day: "Day 4 · Monday", date: "September 21", course: "Arthur Hills", teeTime: "Tee times begin 11:00 AM", format: "18 holes · Singles match play", points: 6, detail: "Six points available: five singles matches, plus an extra-player point. Team Jeremy's unmatched player earns the point with a net score under par, halves it at net par, and concedes it with a net score above par.", type: "competition", handicap: { tee: "Blue", par: 73, courseRating: 69.3, slopeRating: 128, holePars: [4, 4, 5, 4, 4, 5, 3, 4, 3, 4, 5, 4, 5, 3, 4, 3, 4, 5], strokeIndexes: [9, 17, 5, 7, 1, 13, 15, 3, 11, 18, 4, 8, 14, 12, 2, 16, 6, 10], allowance: { percentages: [100] } } },
   ],
-  matches: [],
-  updates: [{ date: "Sept 19", title: "Team Chane leads after Saturday", detail: "Chris and Quinn earned Team Jeremy's point, but Drew and Jared plus Kirk took the other two matches for a 2–1 edge." }],
+  matches: [
+    { id: "sunday-team-total", dayId: "day-3", teamA: "team-a", teamB: "team-b", playersA: [], playersB: [], labelA: "Sunday team total", labelB: "Sunday team total", status: "final", result: "Team Chane won the day 2–1", pointsA: 1, pointsB: 2 },
+    { id: "monday-team-total", dayId: "day-4", teamA: "team-a", teamB: "team-b", playersA: [], playersB: [], labelA: "Monday team total", labelB: "Monday team total", status: "final", result: "Team Chane won the day 3.5–2.5", pointsA: 2.5, pointsB: 3.5 },
+  ],
+  updates: [{ date: "Sept 21", title: "Team Chane wins the Screen Door Open", detail: "Team Chane closed with a 3.5–2.5 Monday win to take the cup, 7.5–4.5 overall." }],
   notes: [
     "Team Jeremy: Jeremy, Derek, Quinn, Kevin, Chris, and Rylan.",
     "Team Chane: Chane, Kirk, Owen, Drew, and Jared.",
     "Saturday: two straight-up 2v2 scramble points, then a 2v1 scramble. All 11 players are in scoring matches.",
     "For Saturday's 2v1, the scramble pair plays without handicap and the solo player receives full course handicap.",
     "Team Chane has a substitute for Sunday's alternate shot, keeping all three matches 2v2.",
-    "Three points are available Saturday and Sunday; six are available Monday.",
+    "Final score: Team Chane 7.5, Team Jeremy 4.5.",
   ],
 };
 

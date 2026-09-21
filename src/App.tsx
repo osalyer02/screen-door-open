@@ -91,13 +91,13 @@ export default function App() {
 
     <section id="scoreboard" className="scoreboard section-shell" aria-labelledby="scoreboard-title">
       <div className="section-label">The Scorecard</div>
-      <div className="scoreboard-heading"><h2 id="scoreboard-title">Race to 12</h2><p>{leader ? `${leader.name} leads the way.` : "The cup is still level."}</p></div>
+      <div className="scoreboard-heading"><h2 id="scoreboard-title">{scoreboard.pointsRemaining === 0 ? "Final score" : "Race to 12"}</h2><p>{leader ? scoreboard.pointsRemaining === 0 ? `${leader.name} takes the cup.` : `${leader.name} leads the way.` : "The cup is still level."}</p></div>
       <div className="score-card">
         <div className="score-team"><TeamMark team={teamA} /><strong>{scoreboard.totals[teamA.id]}</strong></div>
         <div className="score-middle"><span>{scoreboard.pointsAwarded} awarded</span><div className="track" aria-label={`${scoreboard.pointsAwarded} of ${activeTrip.totalPoints} points awarded`}><span style={{ width: `${(scoreboard.pointsAwarded / activeTrip.totalPoints) * 100}%` }} /></div><b>{scoreboard.pointsRemaining} points remaining</b></div>
         <div className="score-team right"><TeamMark team={teamB} /><strong>{scoreboard.totals[teamB.id]}</strong></div>
       </div>
-      <p className="status-line"><span className="status-dot" /> {activeTrip.matches.length ? "Results update as matches are completed." : "Teams are set; competitive pairings will be posted before tee-off."}</p>
+      <p className="status-line"><span className="status-dot" /> {scoreboard.pointsRemaining === 0 ? "Final results are in." : activeTrip.matches.length ? "Results update as matches are completed." : "Teams are set; competitive pairings will be posted before tee-off."}</p>
     </section>
 
     <section className="latest section-shell" aria-labelledby="latest-title"><div className="latest-stamp">Latest<br />Update</div><div><div className="section-label">From the clubhouse · {activeTrip.updates[0]?.date}</div><h2 id="latest-title">{activeTrip.updates[0]?.title}</h2><p>{activeTrip.updates[0]?.detail}</p></div></section>
@@ -131,9 +131,9 @@ export default function App() {
               ? `Net ${matchScore.netA} — ${matchScore.netB}`
               : completed ? match.result : match.status === "in_progress" ? "In progress" : "Teeing off soon";
             return <div className="match-row" key={match.id}>
-              <div><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamA)!} /><strong>{playerNames(match.playersA, activeTrip)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossA} · {matchScore.handicapA} strokes</small>}</div>
+              <div><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamA)!} /><strong>{match.labelA ?? playerNames(match.playersA, activeTrip)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossA} · {matchScore.handicapA} strokes</small>}</div>
               <div className="match-result"><span>{result}</span><b>{matchScore.pointsA}–{matchScore.pointsB} pts</b></div>
-              <div className="match-right"><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamB)!} /><strong>{playerNames(match.playersB, activeTrip)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossB} · {matchScore.handicapB} strokes</small>}</div>
+              <div className="match-right"><TeamMark compact team={activeTrip.teams.find((team) => team.id === match.teamB)!} /><strong>{match.labelB ?? playerNames(match.playersB, activeTrip)}</strong>{matchScore.automatic && <small>Gross {matchScore.grossB} · {matchScore.handicapB} strokes</small>}</div>
             </div>;
           })}</div> : <div className="pairings-empty"><span>○</span><div><strong>Pairings forthcoming</strong><p>Captains will post the matchups after the draft.</p></div></div>}
         </article>;
